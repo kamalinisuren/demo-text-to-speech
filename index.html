@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Text to Speech</title>
+  <meta charset="utf-8" />
+  <style>
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
+      font-size: 14px;
+    }
+
+    table, th, td {
+      border: 1px solid #f1f1f1;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 10px;
+    }
+
+    .mode {
+      font-size: 18px;
+    }
+
+    input:not(disabled) {
+      font-weight: bold;
+      color: black;
+    }
+
+    button {
+      /* padding: 4px 8px; */
+      background: #0078d4;
+      color: #ffffff;
+    }
+
+    button:disabled {
+      /* padding: 4px 8px; */
+      background: #ccc;
+      color: #666;
+    }
+
+    input[type=radio] {
+      position: relative;
+      z-index: 1;
+    }
+
+    input[type=radio] + label {
+      padding: 8px 4px 8px 30px;
+      margin-left: -30px;
+    }
+
+    input[type=radio]:checked + label {
+      background: #0078d4;
+      color: #ffffff;
+    }
+  </style>
+  <script src="microsoft.cognitiveservices.speech.sdk.bundle.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="main.css">
+</head>
+<body style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif; font-size:13px;" class="bg">
+  <div id="warning">
+  </div>
+  <div id="content" style="display:none">
+<div class="section-wrapper">
+  <div class="title-wrapper"><div class="page-title">Demo: Text to Speech</div></div>
+
+
+    <div class="d-flex justify-content-center flex-full">
+      <div><img src="text.png" class="img-text-speech"></div>
+      <div class="box-section"><div class="title-section text-com">Write your message directly into the box below or click on the button!</div>
+        <div><textarea id="phraseDiv" style="display: inline-block;width:500px;height:170px"></textarea></div>
+        <div class="button-section"><button class="btn btn-primary" id="startSpeakTextAsyncButton">Convert to Speech</button></div>
+    </div>
+  </div>
+  <div class="samp-text">
+    <div class="small-title">[Sample Text]</div>
+  <div class="color-grey  sp-text">Text-to-speech (TTS) is a very popular assistive technology in which a computer or tablet reads the words on the screen out loud to the user. This technology is popular among students who have difficulties with reading, especially those who struggle with decoding. By presenting the words auditorily, the student can focus on the meaning of words instead of spending all their brain power trying to sound out the words.</div>
+</div>
+    <table width="100%">
+      <tr style="display:none">
+        <td></td>
+        <td><h1 style="font-weight:500;">Microsoft Cognitive Services Speech SDK JavaScript Quickstart</h1></td>
+      </tr>
+      <tr  style="display:none">
+        <td align="right"><a href="https://docs.microsoft.com/azure/cognitive-services/speech-service/get-started" target="_blank">Subscription</a>:</td>
+        <td><input id="subscriptionKey" type="text" size="40" placeholder="YourSubscriptionKey" value="f415a115cb4a485e9970e1edbddc95ec"></td>
+      </tr>
+      <tr  style="display:none">
+        <td align="right">Region</td>
+        <td><input id="serviceRegion" type="text" size="40" placeholder="YourServiceRegion"  value="eastasia"></td>
+      </tr>
+      <!-- <tr>
+        <td align="right" valign="top">Input Text</td>
+        <td><textarea id="phraseDiv" style="display: inline-block;width:500px;height:50px"></textarea></td>
+      </tr> -->
+      <!-- <tr>
+        <td></td>
+        <td><button id="startSpeakTextAsyncButton">Start Text to Speech</button></td>
+      </tr> -->
+      <tr  style="display:none">
+        <td align="right" valign="top">Result</td>
+        <td><textarea id="resultDiv" style="display: inline-block;width:500px;height:100px"></textarea></td>
+      </tr>
+    </table>
+  </div>
+</div>
+  <!-- Speech SDK reference sdk. -->
+  <script src="https://aka.ms/csspeech/jsbrowserpackageraw"></script>
+
+  <!-- Speech SDK USAGE -->
+  <script>
+    // status fields and start button in UI
+    var phraseDiv;
+    var resultDiv;
+    var startSpeakTextAsyncButton;
+
+    // subscription key and region for speech services.
+    var subscriptionKey, serviceRegion;
+    var SpeechSDK;
+    var synthesizer;
+
+    document.addEventListener("DOMContentLoaded", function () {
+      startSpeakTextAsyncButton = document.getElementById("startSpeakTextAsyncButton");
+      subscriptionKey = document.getElementById("subscriptionKey");
+      serviceRegion = document.getElementById("serviceRegion");
+      phraseDiv = document.getElementById("phraseDiv");
+      resultDiv = document.getElementById("resultDiv");
+
+      startSpeakTextAsyncButton.addEventListener("click", function () {
+        startSpeakTextAsyncButton.disabled = true;
+        phraseDiv.innerHTML = "";
+
+        if (subscriptionKey.value === "" || subscriptionKey.value === "subscription") {
+          alert("Please enter your Microsoft Cognitive Services Speech subscription key!");
+          startSpeakTextAsyncButton.disabled = false;
+          return;
+        }
+        var speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subscriptionKey.value, serviceRegion.value);
+
+        synthesizer = new SpeechSDK.SpeechSynthesizer(speechConfig);
+
+        let inputText = phraseDiv.value;
+        synthesizer.speakTextAsync(
+          inputText,
+          function (result) {
+            startSpeakTextAsyncButton.disabled = false;
+            if (result.reason === SpeechSDK.ResultReason.SynthesizingAudioCompleted) {
+              resultDiv.innerHTML += "synthesis finished for [" + inputText + "].\n";
+            } else if (result.reason === SpeechSDK.ResultReason.Canceled) {
+              resultDiv.innerHTML += "synthesis failed. Error detail: " + result.errorDetails + "\n";
+            }
+            window.console.log(result);
+            synthesizer.close();
+            synthesizer = undefined;
+          },
+          function (err) {
+            startSpeakTextAsyncButton.disabled = false;
+            resultDiv.innerHTML += "Error: ";
+            resultDiv.innerHTML += err;
+            resultDiv.innerHTML += "\n";
+            window.console.log(err);
+
+            synthesizer.close();
+            synthesizer = undefined;
+        });
+      });
+
+      if (!!window.SpeechSDK) {
+        SpeechSDK = window.SpeechSDK;
+        startSpeakTextAsyncButton.disabled = false;
+
+        document.getElementById('content').style.display = 'block';
+        document.getElementById('warning').style.display = 'none';
+
+        // in case we have a function for getting an authorization token, call it.
+        if (typeof RequestAuthorizationToken === "function") {
+            RequestAuthorizationToken();
+        }
+      }
+    });
+  
+  </script>
+</body>
+</html>
